@@ -1,7 +1,6 @@
 // =============================================================================
 // KONFIGURASI
 // =============================================================================
-// API_KEY didefinisikan di config.js (file terpisah, TIDAK di-push ke GitHub)
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 const HISTORY_KEY = 'weather-app:history';
 const MAX_HISTORY = 8;
