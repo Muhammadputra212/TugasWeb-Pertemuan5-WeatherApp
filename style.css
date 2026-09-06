@@ -1,0 +1,575 @@
+/* ============================================================================
+   RESET & BASE
+   ============================================================================ */
+* {
+  box-sizing: border-box;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.hidden {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  color: #ffffff;
+  transition: background 1s ease;
+  background: linear-gradient(160deg, #3f5f8f 0%, #24344d 60%, #141c2b 100%);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body.weather--default { background: linear-gradient(160deg, #3f5f8f 0%, #24344d 60%, #141c2b 100%); }
+body.weather--clear   { background: linear-gradient(160deg, #4a8fd6 0%, #2c5c96 60%, #16304f 100%); }
+body.weather--clouds  { background: linear-gradient(160deg, #5d6b7e 0%, #414d5e 60%, #262d38 100%); }
+body.weather--rain    { background: linear-gradient(160deg, #3a4a5e 0%, #262e38 60%, #12161d 100%); }
+body.weather--thunder { background: linear-gradient(160deg, #2c3347 0%, #16191f 60%, #0a0c10 100%); }
+body.weather--snow    { background: linear-gradient(160deg, #7d93b3 0%, #5a6e8f 60%, #333f52 100%); }
+body.weather--mist    { background: linear-gradient(160deg, #78848d 0%, #5a636b 60%, #363b41 100%); }
+
+h1, h2 {
+  font-family: 'Manrope', sans-serif;
+  margin: 0;
+}
+
+/* ============================================================================
+   OVERLAYS: night, particles, vignette
+   ============================================================================ */
+.night-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 10, 22, 0.4);
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+.night-overlay.is-active { opacity: 1; }
+
+.particles {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.35) 100%);
+}
+
+.particle--rain {
+  position: absolute;
+  top: -20px;
+  width: 2px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes fall { to { transform: translateY(110vh); } }
+
+.particle--snow {
+  position: absolute;
+  top: -10px;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  animation-name: snowfall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes snowfall { to { transform: translateY(110vh) translateX(24px); } }
+
+.particle--cloud {
+  position: absolute;
+  left: -220px;
+  width: 200px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.25);
+  filter: blur(24px);
+  border-radius: 50%;
+  animation-name: drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes drift { to { transform: translateX(calc(100vw + 420px)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .particle--rain, .particle--snow, .particle--cloud { animation: none; display: none; }
+}
+
+/* ============================================================================
+   DASHBOARD GRID
+   ============================================================================ */
+.dashboard {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 24px 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================================
+   TOPBAR
+   ============================================================================ */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.topbar__brand {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+   SEARCH
+   ============================================================================ */
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 280px;
+  width: 100%;
+}
+
+.search__icon {
+  position: absolute;
+  left: 14px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.search__input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.search__input::placeholder { color: rgba(255, 255, 255, 0.55); }
+.search__input:focus-visible { outline: none; background: rgba(255, 255, 255, 0.2); }
+
+/* ============================================================================
+   HISTORY & QUICK CITIES
+   ============================================================================ */
+.history, .quick-cities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.history { margin-bottom: 20px; }
+.quick-cities { margin-top: 18px; justify-content: center; }
+
+.history__chip {
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  opacity: 0;
+  animation: chip-in 0.4s ease forwards;
+}
+
+.history__chip:nth-child(1) { animation-delay: 0.05s; }
+.history__chip:nth-child(2) { animation-delay: 0.12s; }
+.history__chip:nth-child(3) { animation-delay: 0.19s; }
+.history__chip:nth-child(4) { animation-delay: 0.26s; }
+.history__chip:nth-child(5) { animation-delay: 0.33s; }
+.history__chip:nth-child(6) { animation-delay: 0.4s; }
+.history__chip:nth-child(7) { animation-delay: 0.47s; }
+.history__chip:nth-child(8) { animation-delay: 0.54s; }
+
+@keyframes chip-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history__chip { opacity: 1; animation: none; }
+}
+
+.history__chip:hover { background: rgba(255, 255, 255, 0.12); }
+
+/* ============================================================================
+   STATUS: LOADING / ERROR
+   ============================================================================ */
+.status {
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status--error {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 14px 16px;
+  border-radius: 14px;
+}
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+/* ============================================================================
+   EMPTY STATE
+   ============================================================================ */
+.empty-state {
+  margin-top: 60px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.empty-state svg {
+  opacity: 0.6;
+  margin-bottom: 14px;
+  animation: float 3.2s ease-in-out infinite;
+}
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@media (prefers-reduced-motion: reduce) { .empty-state svg { animation: none; } }
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.88rem;
+  max-width: 30ch;
+  margin-inline: auto;
+}
+
+/* ============================================================================
+   HERO PANEL — headline besar + wave forecast
+   ============================================================================ */
+.hero-panel__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 10px;
+}
+
+.hero-panel__headline {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  max-width: 14ch;
+}
+
+.hero-panel__summary {
+  margin: 14px 0 0;
+  max-width: 46ch;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ============================================================================
+   FORECAST WAVE CHART
+   ============================================================================ */
+.forecast-wave {
+  margin-top: 40px;
+  position: relative;
+}
+
+.forecast-wave__svg {
+  width: 100%;
+  height: 110px;
+  display: block;
+  overflow: visible;
+}
+
+.forecast-wave__path {
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 2;
+}
+
+.forecast-wave__points {
+  position: absolute;
+  inset: 0;
+  height: 130px;
+}
+
+.forecast-point {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.forecast-point__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.forecast-point__temp {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  order: -1;
+  margin-bottom: 2px;
+}
+
+.forecast-point.is-today .forecast-point__dot {
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+.forecast-point.is-today .forecast-point__temp {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.forecast-wave__days {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding: 0 4px;
+}
+
+.forecast-wave__day {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  flex: 1;
+}
+
+.forecast-wave__day.is-today {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ============================================================================
+   SIDEBAR: CURRENT CARD
+   ============================================================================ */
+.current-card {
+  padding: 22px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+}
+
+.current-card__location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.current-card__time {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: capitalize;
+}
+
+.current-card__temp-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.current-card__temp {
+  font-family: 'Manrope', sans-serif;
+  font-size: 3.2rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1;
+}
+
+.current-card__icon {
+  width: 56px;
+  height: 56px;
+}
+
+.current-card__desc {
+  margin: 4px 0 16px;
+  font-size: 0.9rem;
+  text-transform: capitalize;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.unit-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.unit-toggle__option {
+  padding: 4px 13px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.unit-toggle__option.is-active {
+  background: rgba(255, 255, 255, 0.9);
+  color: #24344d;
+}
+
+.current-card__stats {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.stat__icon { font-size: 0.9rem; }
+.stat__value { font-weight: 500; }
+
+/* ============================================================================
+   SIDEBAR: OTHER CITIES
+   ============================================================================ */
+.other-cities {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+}
+
+.other-cities__title {
+  margin: 0 0 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.other-cities__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.other-city {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  color: #ffffff;
+  font: inherit;
+  text-align: left;
+}
+
+.other-city:hover { background: rgba(255, 255, 255, 0.1); }
+
+.other-city__icon { width: 26px; height: 26px; flex-shrink: 0; }
+
+.other-city__name {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.other-city__temp {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+.site-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 20px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+.site-footer a { color: rgba(255, 255, 255, 0.65); }
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+@media (max-width: 480px) {
+  .dashboard { padding: 20px 16px 32px; }
+  .current-card__stats { flex-wrap: wrap; gap: 10px; }
+  .forecast-wave__day { font-size: 0.68rem; }
+}

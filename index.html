@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cuaca — Weather Dashboard</title>
+  <meta name="description" content="Dashboard cuaca real-time — suhu, kelembaban, prakiraan 5 hari, dan cuaca kota lain.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="app-body" class="weather--default">
+
+  <div id="night-overlay" class="night-overlay" aria-hidden="true"></div>
+  <div id="particles" class="particles" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <div class="dashboard">
+
+    <!-- ===================== MAIN (kiri) ===================== -->
+    <div class="dashboard__main">
+      <header class="topbar">
+        <span class="topbar__brand">🌤️ Cuaca</span>
+
+        <form id="search-form" class="search" autocomplete="off">
+          <svg class="search__icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <label for="city-input" class="sr-only">Cari nama kota</label>
+          <input type="text" id="city-input" class="search__input" placeholder="Cari kota" required>
+          <button type="submit" class="sr-only">Cari</button>
+        </form>
+      </header>
+
+      <div id="history" class="history" aria-label="Riwayat pencarian"></div>
+
+      <div id="loading" class="status status--loading hidden" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        Mengambil data cuaca
+      </div>
+
+      <div id="error" class="status status--error hidden" role="alert"></div>
+
+      <div id="empty-state" class="empty-state">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+          <path d="M17.5 19a4.5 4.5 0 000-9 6 6 0 00-11.6 1.5A4 4 0 007 19h10.5z"/>
+        </svg>
+        <p>Mendeteksi lokasi kamu... kalau nggak berhasil, coba cari manual atau pilih kota di bawah.</p>
+        <div id="quick-cities" class="quick-cities" aria-label="Kota populer">
+          <button type="button" class="history__chip" data-city="Jakarta">Jakarta</button>
+          <button type="button" class="history__chip" data-city="Medan">Medan</button>
+          <button type="button" class="history__chip" data-city="Tokyo">Tokyo</button>
+          <button type="button" class="history__chip" data-city="Paris">Paris</button>
+          <button type="button" class="history__chip" data-city="New York">New York</button>
+        </div>
+      </div>
+
+      <!-- ===================== HERO / HEADLINE + FORECAST WAVE ===================== -->
+      <section id="weather-card" class="hero-panel hidden" aria-live="polite">
+        <p class="hero-panel__eyebrow">Prakiraan Cuaca</p>
+        <h1 id="weather-headline" class="hero-panel__headline">—</h1>
+        <p id="weather-summary" class="hero-panel__summary">—</p>
+
+        <div id="forecast" class="forecast-wave hidden" aria-label="Prakiraan 5 hari">
+          <svg id="forecast-svg" class="forecast-wave__svg" viewBox="0 0 700 130" preserveAspectRatio="none" aria-hidden="true">
+            <path id="forecast-path" class="forecast-wave__path" fill="none"></path>
+          </svg>
+          <div id="forecast-points" class="forecast-wave__points"></div>
+          <div id="forecast-days" class="forecast-wave__days"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===================== SIDEBAR (kanan) ===================== -->
+    <aside class="dashboard__sidebar">
+      <div id="current-card" class="current-card hidden">
+        <p class="current-card__location">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 00-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z"/></svg>
+          <span id="city-name">—</span>
+        </p>
+        <p id="local-time" class="current-card__time">—</p>
+
+        <div class="current-card__temp-row">
+          <p id="temp-value" class="current-card__temp">—°</p>
+          <img id="weather-icon" class="current-card__icon" src="" alt="" width="56" height="56">
+        </div>
+        <p id="weather-desc" class="current-card__desc">—</p>
+
+        <button type="button" id="unit-toggle" class="unit-toggle" aria-label="Ganti satuan suhu">
+          <span class="unit-toggle__option is-active" data-unit="metric">°C</span>
+          <span class="unit-toggle__option" data-unit="imperial">°F</span>
+        </button>
+
+        <div class="current-card__stats">
+          <div class="stat">
+            <span class="stat__icon" aria-hidden="true">💨</span>
+            <span id="wind" class="stat__value">— m/s</span>
+          </div>
+          <div class="stat">
+            <span class="stat__icon" aria-hidden="true">💧</span>
+            <span id="humidity" class="stat__value">—%</span>
+          </div>
+          <div class="stat">
+            <span class="stat__icon" aria-hidden="true">🌡️</span>
+            <span id="feels-like" class="stat__value">—°</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="other-cities" class="other-cities hidden">
+        <p class="other-cities__title">Kota Lain</p>
+        <div id="other-cities-list" class="other-cities__list"></div>
+      </div>
+    </aside>
+
+  </div>
+
+  <footer class="site-footer">
+    <p>Data cuaca dari <a href="https://openweathermap.org" target="_blank" rel="noopener noreferrer">OpenWeatherMap</a></p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
